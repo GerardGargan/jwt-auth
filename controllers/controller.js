@@ -1,5 +1,6 @@
 const db = require('./../util/dbconn');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 exports.getRegister = (req, res) => {
     res.render('register');
@@ -25,6 +26,7 @@ exports.postRegister = async (req, res) => {
 }
 
 exports.getLogin = (req, res) => {
+   // console.log(req.cookies.jwtAuth);
     res.render('login');
 }
 
@@ -37,14 +39,22 @@ exports.postLogin = async (req, res) => {
     if(data.length > 0) {
         //user exists, get their password to compare
         const hashedPassword = data[0].password.toString();
-        console.log(password);
-        console.log(hashedPassword);
         const comparePass = await comparePassword(password, hashedPassword);
-        console.log(comparePass);
-        if(comparePass) {
+
+        if (comparePass) {
             console.log(`Password match`);
+            const user = { name: data[0].name };
+        
+            //set up jwt token
+            const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+            //store in a cookie
+            res.cookie('token', accessToken, { httpOnly: true });
+            res.end(() => {
+                console.log(req.cookies.jwtAuth);
+            });
         } else {
-            console.log(`Password doesnt match`);
+            console.log(`Password doesn't match`);
+            res.redirect('/login');
         }
 
     } else {
@@ -55,6 +65,11 @@ exports.postLogin = async (req, res) => {
 
 exports.getHome = (req, res) => {
     res.send('hello world');
+}
+
+exports.getProtected = (req, res) => {
+    console.log(req.user)
+    res.send('Protected page');
 }
 
 async function hashPassword(plaintext, rounds) {
@@ -74,3 +89,4 @@ async function comparePassword(password, hashedPassword) {
         console.log(err);
     }
 }
+
