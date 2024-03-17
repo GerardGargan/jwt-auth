@@ -69,6 +69,11 @@ exports.getProtected = (req, res) => {
   res.render('protected', { user: req.user });
 };
 
+exports.getLogout = (req, res) => {
+    res.clearCookie('token');
+    res.redirect('/login');
+}
+
 async function hashPassword(plaintext, rounds) {
   try {
     const hashed = bcrypt.hash(plaintext, rounds);

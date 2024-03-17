@@ -16,4 +16,6 @@ router.route('/register')
 
 router.get('/protected', middleware.isAuth, controller.getProtected);
 
+router.get('/logout', controller.getLogout);
+
 module.exports = router;
